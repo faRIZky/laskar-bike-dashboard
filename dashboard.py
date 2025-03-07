@@ -2,9 +2,6 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
 
 st.set_page_config(page_title="Bike Sharing Dashboard")
 
@@ -86,35 +83,40 @@ st.pyplot(fig)
 
 with st.expander("Lihat penjelasan"):
     st.write("""
-    Permintaan cenderung stabil pada hari kerja, tetapi meningkat pada hari libur, terutama pada hari Selasa. Hal ini mungkin karena adanya acara khusus atau promosi yang menarik lebih banyak pengguna.
+    Permintaan cenderung merata pada hari kerja, tetapi meningkat secara signifikan pada hari libur, terutama pada hari Selasa dengan presentase sebesar 71.4%. Kemungkinan pada hari kerja, sebagian penduduk menggunakan penyewaan sepeda dan menyewa sepeda sudah menjadi suatu hal yang mereka lakukan sehari-hari kerja.
     """)
 
-# Clustering Visualization
+# Clustering Visualization (Tanpa ML)
 st.subheader("Bagaimana pola peminjaman berdasarkan jam dengan clustering?")
-features = ['hour', 'season', 'count']
-bike_cluster_df = bike_df[features]
-scaler = StandardScaler()
-bike_cluster_scaled = scaler.fit_transform(bike_cluster_df)
-kmeans = KMeans(n_clusters=3, init='k-means++', random_state=42)
-bike_df['Cluster'] = kmeans.fit_predict(bike_cluster_scaled)
+
+def categorize_hour(hour):
+    if 0 <= hour <= 6:
+        return "Low Usage"
+    elif 7 <= hour <= 16:
+        return "Medium Usage"
+    else:
+        return "High Usage"
+
+bike_df["Usage Category"] = bike_df["hour"].apply(categorize_hour)
+
 fig, ax = plt.subplots(figsize=(10, 6))
-sns.scatterplot(x=bike_df['hour'], y=bike_df['count'], hue=bike_df['Cluster'], palette='Dark2', s=50, ax=ax)
-ax.set_xlabel('Hour')
-ax.set_ylabel('Bike Rental Count')
-ax.set_title('Clustering of Bike Rentals by Hour')
+sns.boxplot(x="Usage Category", y="count", data=bike_df, palette=["#6495ED", "#D3D3D3", "#FF6F61"])
+ax.set_xlabel("Usage Category")
+ax.set_ylabel("Bike Rental Count")
+ax.set_title("Clustering of Bike Rentals by Hour (Without ML)")
 st.pyplot(fig)
 
 with st.expander("Lihat penjelasan"):
     st.write("""
+    Dari hasil analisis clustering manual terhadap jumlah peminjaman sepeda berdasarkan jam, dapat disimpulkan bahwa terdapat tiga kategori utama dalam pola peminjaman:
 
-Berdasarkan metode WCSS, jumlah cluster optimal untuk segmentasi data adalah tiga cluster.
-- Cluster 0 (biru kehijauan): Terjadi pada jam-jam dengan jumlah rental rendah, biasanya saat dini hari atau malam.
-- Cluster 1 (kuning): Mewakili waktu transisi dengan volume rental sedikit lebih tinggi, seperti pagi sebelum jam sibuk atau sore menjelang malam.
-- Cluster 2 (ungu): Menunjukkan jam-jam sibuk dengan lonjakan signifikan dalam penyewaan sepeda, terutama pada pagi (07:00–09:00) dan sore (17:00–19:00), yang kemungkinan besar terkait dengan jam commuting (berangkat dan pulang kerja/sekolah).
+- Low Usage (Jam 0-6) Pada periode ini, jumlah peminjaman sepeda sangat rendah, dengan sebagian besar peminjaman berada di bawah 100 unit. Hal ini wajar mengingat rentang waktu ini merupakan waktu istirahat malam hingga dini hari, di mana aktivitas luar ruangan minim.
 
-Dari pola ini, layanan bike-sharing dapat dioptimalkan dengan:
-- Meningkatkan jumlah sepeda yang tersedia pada jam-jam sibuk untuk mengakomodasi tingginya permintaan.
-- Menyediakan diskon atau promosi pada jam-jam sepi untuk mendorong lebih banyak penggunaan dan meningkatkan efisiensi layanan.
-""")
+- Medium Usage (Jam 7-16) Pada pagi hingga sore hari, jumlah peminjaman meningkat secara signifikan. Rentang peminjaman lebih luas dibandingkan dengan periode sebelumnya, menunjukkan bahwa sepeda digunakan untuk berbagai keperluan seperti transportasi ke kantor, sekolah, atau aktivitas siang hari lainnya.
+
+- High Usage (Jam 17-23) Jumlah peminjaman sepeda mencapai puncaknya pada sore hingga malam hari. Banyak peminjaman yang melebihi 400 unit, yang mengindikasikan bahwa sepeda banyak digunakan untuk perjalanan pulang kerja, rekreasi, atau aktivitas santai di malam hari.
+
+Jam sore hingga malam merupakan waktu dengan permintaan tertinggi, sehingga penyedia layanan sepeda dapat mempertimbangkan peningkatan ketersediaan unit pada periode ini. Dini hari memiliki peminjaman terendah, sehingga jumlah sepeda yang tersedia bisa dikurangi untuk efisiensi.
+    """)
 
 st.caption('Copyright (c) Dicoding 2025')
