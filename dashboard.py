@@ -3,33 +3,51 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
+# Konfigurasi halaman
 st.set_page_config(page_title="Bike Sharing Dashboard")
 
-# Set theme
+# Set tema visual
 sns.set_theme(style="whitegrid")
 
 # Load data
 bike_df = pd.read_csv("bike.csv")
 
+# Fungsi untuk menghitung rata-rata pengguna terdaftar dan tidak terdaftar
+def create_avg_registered_df(df):
+    avg_registered_df = df.groupby('year')['registered'].mean()
+    return avg_registered_df
+
+def create_avg_unregistered_df(df):
+    avg_unregistered_df = df.groupby('year')['unregistered'].mean()
+    return avg_unregistered_df
+
+# DataFrame rata-rata
+avg_registered_df = create_avg_registered_df(bike_df)
+avg_unregistered_df = create_avg_unregistered_df(bike_df)
+
 # Sidebar
 with st.sidebar:
     st.title("🚴 Bike Sharing Dashboard")
-    st.markdown("""
-    **Fitur Dashboard:**
-    - Rata-rata peminjaman per musim
-    - Perbandingan pengguna terdaftar dan tidak terdaftar
-    - Distribusi peminjaman pada hari kerja & libur
-    - Clustering peminjaman berdasarkan jam
-    """)
+    st.markdown(
+        """
+        **Fitur Dashboard:**
+        - Rata-rata peminjaman per musim
+        - Perbandingan pengguna terdaftar dan tidak terdaftar
+        - Distribusi peminjaman pada hari kerja & libur
+        - Clustering peminjaman berdasarkan jam
+        """
+    )
     st.info("Gunakan fitur interaktif untuk eksplorasi lebih lanjut!")
 
-# Header
-st.header("Bike Sharing Dashboard 🚲")
+# Header utama
+title_col, _ = st.columns([3, 1])
+with title_col:
+    st.title("Bike Sharing Dashboard 🚲")
 
 # Warna untuk musim
 season_colors = ['#76c7c0', '#ffcc5c', '#ff6f61', '#6b5b95']
 
-# Bar chart: Mean Bike Rental Count by Season
+# Bar chart: Rata-rata peminjaman berdasarkan musim
 st.subheader("Bagaimana rata-rata peminjaman pada setiap musim?")
 avg_season_df = bike_df.groupby('season')['count'].mean()
 fig, ax = plt.subplots(figsize=(8, 5))
@@ -42,51 +60,77 @@ ax.set_ylabel('Average Rental Count')
 st.pyplot(fig)
 
 with st.expander("Lihat penjelasan"):
-    st.write("""
-    Data menunjukan bahwa rata-rata permintaan peminjaman sepeda tertinggi terjadi di musim gugur dan permintaan terendah terjadi di musim semi. Ketiga musim lainnya terlihat berada di antara angka 200, sedangkan musim semi tidak sampai rata-rata 150 permintaan.
-    """)
+    st.write(
+        """
+        Total rata-rata permintaan peminjaman pada tahun 2021 lebih tinggi. Hal ini juga sebanding lurus dengan naiknya jumlah permintaan dari pengguna unregistered sebesar 48.28%. Walaupun begitu, gap nilai registered dan unregistered sangatlah jauh. Angka unregistered tidak menyentuh angka 100 pada tahun 2020 dan 2021.
+    """
+    )
 
-# Subplot: Mean Registered vs. Unregistered Users
-st.subheader("Bagaimana perbedaan peminjaman antara pengguna terdaftar dan tidak terdaftar?")
-avg_registered_df = bike_df.groupby('year')['registered'].mean()
-avg_unregistered_df = bike_df.groupby('year')['unregistered'].mean()
-fig, ax = plt.subplots(1, 2, figsize=(16, 6))
-ax[0].bar(avg_registered_df.index, avg_registered_df.values, color="#4C72B0")
-ax[0].set_title('Mean Rental Count by Registered Users')
-ax[0].set_xlabel('Year')
-ax[0].set_ylabel('Average Registered Users')
-ax[1].bar(avg_unregistered_df.index, avg_unregistered_df.values, color="#DD8452")
-ax[1].set_title('Mean Rental Count by Unregistered Users')
-ax[1].set_xlabel('Year')
-ax[1].set_ylabel('Average Unregistered Users')
-st.pyplot(fig)
+# Perbandingan peminjaman pengguna terdaftar dan tidak terdaftar
+st.subheader("Bagaimana rata-rata peminjaman sepeda pada hari kerja dan hari libur?")
+tabs = st.tabs(["Registered Users", "Unregistered Users"])
+
+with tabs[0]:
+    st.subheader("Registered Users per Year")
+    fig_registered, ax_registered = plt.subplots(figsize=(8, 6))
+    ax_registered.bar(avg_registered_df.index, avg_registered_df.values, color='#2AAA8A')
+    ax_registered.set_title('Mean Bike Rental Count by Registered Users')
+    ax_registered.set_xlabel('Year')
+    ax_registered.set_ylabel('Average Registered')
+    ax_registered.set_xticks([0, 1])
+    ax_registered.set_xticklabels(['2020', '2021'])
+    st.pyplot(fig_registered)
+
+
+with tabs[1]:
+    st.subheader("Unregistered Users per Year")
+    fig_unregistered, ax_unregistered = plt.subplots(figsize=(8, 6))
+    ax_unregistered.bar(avg_unregistered_df.index, avg_unregistered_df.values, color='#FF6F61')
+    ax_unregistered.set_title('Mean Bike Rental Count by Unregistered Users')
+    ax_unregistered.set_xlabel('Year')
+    ax_unregistered.set_ylabel('Average Unregistered')
+    ax_unregistered.set_xticks([0, 1])
+    ax_unregistered.set_xticklabels(['2020', '2021'])
+    st.pyplot(fig_unregistered)
 
 with st.expander("Lihat penjelasan"):
-    st.write("""
-    Total rata-rata permintaan peminjaman pada tahun 2021 lebih tinggi. Hal ini juga sebanding lurus dengan naiknya jumlah permintaan dari pengguna unregistered sebesar 48.28%. Walaupun begitu, gap nilai registered dan unregistered sangatlah jauh. Angka unregistered tidak menyentuh angka 100 pada tahun 2020 dan 2021.
-    """)
+    st.write(
+        """
+        Rata-rata permintaan peminjaman pada tahun 2021 lebih tinggi dibandingkan 2020.
+        """
+    )
 
-# Pie Chart: Weekday Distribution for Holiday
-st.subheader("Bagaimana distribusi peminjaman sepeda pada hari kerja dan hari libur?")
+# Pie Chart: Distribusi peminjaman pada hari kerja dan hari libur
+st.subheader("Bagaimana distribusi permintaan peminjaman sepeda pada hari kerja dan hari libur?")
+tabs = st.tabs(["Working Day", "Holiday"])
+
+# Nama hari dalam seminggu
 weekday_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-holiday_0 = bike_df[bike_df['holiday'] == 0]
-holiday_1 = bike_df[bike_df['holiday'] == 1]
-weekday_counts_0 = holiday_0['weekday'].value_counts().sort_index()
-weekday_counts_1 = holiday_1['weekday'].value_counts().sort_index()
-colors = sns.color_palette("Set2")
-fig, ax = plt.subplots(1, 2, figsize=(14, 6))
-ax[0].pie(weekday_counts_0, labels=[weekday_names[idx] for idx in weekday_counts_0.index], autopct='%1.1f%%', colors=colors)
-ax[0].set_title('Weekday Distribution (Non-Holiday)')
-ax[1].pie(weekday_counts_1, labels=[weekday_names[idx] for idx in weekday_counts_1.index], autopct='%1.1f%%', colors=colors)
-ax[1].set_title('Weekday Distribution (Holiday)')
-st.pyplot(fig)
+
+# Data untuk hari kerja dan libur
+weekday_counts_0 = bike_df[bike_df['holiday'] == 0].groupby('weekday').size()
+weekday_counts_1 = bike_df[bike_df['holiday'] == 1].groupby('weekday').size()
+
+with tabs[0]:
+    fig1, ax1 = plt.subplots(figsize=(8, 6))
+    ax1.pie(weekday_counts_0, labels=[weekday_names[idx] for idx in weekday_counts_0.index], autopct='%1.1f%%')
+    ax1.set_title('Weekday Distribution for Working Days')
+    st.pyplot(fig1)
+
+with tabs[1]:
+    fig2, ax2 = plt.subplots(figsize=(8, 6))
+    ax2.pie(weekday_counts_1, labels=[weekday_names[idx] for idx in weekday_counts_1.index], autopct='%1.1f%%')
+    ax2.set_title('Weekday Distribution for Holidays')
+    st.pyplot(fig2)
 
 with st.expander("Lihat penjelasan"):
-    st.write("""
+    st.write(
+        """
     Permintaan cenderung merata pada hari kerja, tetapi meningkat secara signifikan pada hari libur, terutama pada hari Selasa dengan presentase sebesar 71.4%. Kemungkinan pada hari kerja, sebagian penduduk menggunakan penyewaan sepeda dan menyewa sepeda sudah menjadi suatu hal yang mereka lakukan sehari-hari kerja.
-    """)
+    """
+    )
 
-# Clustering Visualization (Tanpa ML)
+# Clustering berdasarkan jam peminjaman
 st.subheader("Bagaimana pola peminjaman berdasarkan jam dengan clustering?")
 
 def categorize_hour(hour):
@@ -107,8 +151,9 @@ ax.set_title("Clustering of Bike Rentals by Hour (Without ML)")
 st.pyplot(fig)
 
 with st.expander("Lihat penjelasan"):
-    st.write("""
-    Dari hasil analisis clustering manual terhadap jumlah peminjaman sepeda berdasarkan jam, dapat disimpulkan bahwa terdapat tiga kategori utama dalam pola peminjaman:
+    st.write(
+        """
+         Dari hasil analisis clustering manual terhadap jumlah peminjaman sepeda berdasarkan jam, dapat disimpulkan bahwa terdapat tiga kategori utama dalam pola peminjaman:
 
 - Low Usage (Jam 0-6) Pada periode ini, jumlah peminjaman sepeda sangat rendah, dengan sebagian besar peminjaman berada di bawah 100 unit. Hal ini wajar mengingat rentang waktu ini merupakan waktu istirahat malam hingga dini hari, di mana aktivitas luar ruangan minim.
 
@@ -117,6 +162,7 @@ with st.expander("Lihat penjelasan"):
 - High Usage (Jam 17-23) Jumlah peminjaman sepeda mencapai puncaknya pada sore hingga malam hari. Banyak peminjaman yang melebihi 400 unit, yang mengindikasikan bahwa sepeda banyak digunakan untuk perjalanan pulang kerja, rekreasi, atau aktivitas santai di malam hari.
 
 Jam sore hingga malam merupakan waktu dengan permintaan tertinggi, sehingga penyedia layanan sepeda dapat mempertimbangkan peningkatan ketersediaan unit pada periode ini. Dini hari memiliki peminjaman terendah, sehingga jumlah sepeda yang tersedia bisa dikurangi untuk efisiensi.
-    """)
+    """
+    )
 
-st.caption('Copyright (c) Dicoding 2025')
+st.caption('© Dicoding 2025')
