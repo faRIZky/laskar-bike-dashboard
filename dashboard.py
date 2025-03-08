@@ -10,7 +10,7 @@ st.set_page_config(page_title="Bike Sharing Dashboard")
 sns.set_theme(style="whitegrid")
 
 # Load data
-bike_df = pd.read_csv("bike.csv")
+bike_df = pd.read_csv("hour.csv")
 
 # Fungsi untuk menghitung rata-rata pengguna terdaftar dan tidak terdaftar
 def create_avg_registered_df(df):
