@@ -62,7 +62,7 @@ st.pyplot(fig)
 with st.expander("Lihat penjelasan"):
     st.write(
         """
-        Total rata-rata permintaan peminjaman pada tahun 2021 lebih tinggi. Hal ini juga sebanding lurus dengan naiknya jumlah permintaan dari pengguna unregistered sebesar 48.28%. Walaupun begitu, gap nilai registered dan unregistered sangatlah jauh. Angka unregistered tidak menyentuh angka 100 pada tahun 2020 dan 2021.
+       Data menunjukan bahwa rata-rata permintaan peminjaman sepeda tertinggi terjadi di musim gugur dan permintaan terendah terjadi di musim semi. Ketiga musim lainnya terlihat berada di antara angka 200, sedangkan musim semi tidak sampai rata-rata 150 permintaan.
     """
     )
 
@@ -96,7 +96,7 @@ with tabs[1]:
 with st.expander("Lihat penjelasan"):
     st.write(
         """
-        Rata-rata permintaan peminjaman pada tahun 2021 lebih tinggi dibandingkan 2020.
+        Total rata-rata permintaan peminjaman pada tahun 2021 lebih tinggi. Hal ini juga sebanding lurus dengan naiknya jumlah permintaan dari pengguna unregistered sebesar 48.28%. Walaupun begitu, gap nilai registered dan unregistered sangatlah jauh. Angka unregistered tidak menyentuh angka 100 pada tahun 2020 dan 2021.
         """
     )
 
