@@ -18,4 +18,4 @@ streamlit run dashboard.py
 ```
 
 Access the dashboard here:
-https://dashboardfinal-bxzpqxpwxtrakdfcejbs2x.streamlit.app/
+https://farizs-larkar-bike-dashboard.streamlit.app/
